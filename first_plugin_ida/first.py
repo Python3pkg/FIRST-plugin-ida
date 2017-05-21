@@ -37,12 +37,12 @@ try:
     import requests
 except ImportError:
     required_modules_loaded &= False
-    print 'FIRST requires Python module requests\n'
+    print('FIRST requires Python module requests\n')
 
 try:
     from requests_kerberos import HTTPKerberosAuth
 except ImportError:
-    print '[1st] Kerberos support is not avaialble'
+    print('[1st] Kerberos support is not avaialble')
     HTTPKerberosAuth = None
 
 from PyQt5 import QtGui, QtWidgets, QtCore
@@ -61,7 +61,7 @@ import datetime
 import calendar
 import threading
 import collections
-import ConfigParser
+import configparser
 from os.path import exists
 from hashlib import sha256, md5, sha1
 from base64 import b64encode, b64decode
@@ -226,7 +226,7 @@ class FIRST_FormClass(idaapi.PluginForm):
         self.thread_stop = False
 
         #   wait several seconds
-        for i in xrange(3):
+        for i in range(3):
             time.sleep(1)
             if idaapi.wasBreak():
                 self.thread_stop = True
@@ -407,7 +407,7 @@ class FIRST_FormClass(idaapi.PluginForm):
             name_str = name_str.replace(':08x}', ':016x}')
         root_node = data_model.invisibleRootItem()
         cmp_func = lambda x,y: cmp(x.address, y.address)
-        for match in sorted(data.values(), cmp=cmp_func):
+        for match in sorted(list(data.values()), cmp=cmp_func):
             #   Row: <address and name> <prototype> <creator>
             name = QtGui.QStandardItem(name_str.format(match))
             prototype = QtGui.QStandardItem(match.prototype)
@@ -633,7 +633,7 @@ class FIRST(object):
         if not imports:
             return
 
-        for i in xrange(imports):
+        for i in range(imports):
             IDAW.enum_import_names(i, func)
 
 
@@ -718,7 +718,7 @@ class FIRST(object):
             if segment_offset not in FIRST.function_list:
                 return None
 
-            return FIRST.function_list[segment_offset].values()
+            return list(FIRST.function_list[segment_offset].values())
 
         @staticmethod
         def populate_function_list():
@@ -992,7 +992,7 @@ class FIRST(object):
                     if not instruction:
                         continue
 
-                    for i in xrange(len(instruction.Operands)):
+                    for i in range(len(instruction.Operands)):
                         if IDAW.GetOpType(instr, i) == idaapi.o_mem:
                             name = IDAW.Name(IDAW.GetOperandValue(instr, i))
                             break
@@ -1085,7 +1085,7 @@ class FIRST(object):
                     idaapi.execute_ui_requests((FIRSTUI.Requests.Print(temp_str.format(function.name)),))
                     continue
 
-                for i in xrange(1, records):
+                for i in range(1, records):
                     begin = start + ((i + 1) * FIRST.DB.record_size)
                     end = begin + FIRST.DB.record_size
                     IDAW.SetArrayString(tag, key + i, data[begin:end])
@@ -1137,7 +1137,7 @@ class FIRST(object):
             for r in first[:len(max_str)]:
                 records = (records << 16) | ord(r)
 
-            for i in xrange(1, records):
+            for i in range(1, records):
                 new_data = IDAW.GetArrayElement(IDAW.AR_STR, tag, key + i)
                 if 0 == new_data:
                     break
@@ -1328,7 +1328,7 @@ class FIRST(object):
 
         @address.setter
         def address(self, address):
-            if type(address) not in [int, long]:
+            if type(address) not in [int, int]:
                 return
 
             self.__address = address
@@ -1540,7 +1540,7 @@ class FIRST(object):
 
             try:
                 self.__data = json.loads(data_str)
-                if set(required).issubset(self.__data.keys()):
+                if set(required).issubset(list(self.__data.keys())):
                     if self.offset != self.__data['offset']:
                         msg = 'Incorrect offsets {0:x} != {1:x}\n'.format(
                                         self.offset, self.__data['offset'])
@@ -1581,7 +1581,7 @@ class FIRST(object):
             error_str = 'Cannot encapsulate server metadata'
             required = ['name', 'prototype', 'creator', 'id', 'comment', 'rank']
 
-            if (dict != type(data) or not set(required).issubset(data.keys())):
+            if (dict != type(data) or not set(required).issubset(list(data.keys()))):
                 raise FIRST.Error(error_str)
 
             self.__data = data
@@ -1682,7 +1682,7 @@ class FIRST(object):
             self.__data = {}
 
             #   Load configuration
-            if isinstance(config, ConfigParser.RawConfigParser):
+            if isinstance(config, configparser.RawConfigParser):
                 self.load_config(config)
 
         @property
@@ -1760,7 +1760,7 @@ class FIRST(object):
             Args:
                 config_path (:obj:`str`): File path to save configuration.
             '''
-            config = ConfigParser.RawConfigParser()
+            config = configparser.RawConfigParser()
 
             section = 'connection_info'
             values = {  'server' : self.server, 'port' : self.port,
@@ -1769,13 +1769,13 @@ class FIRST(object):
                         'api_key' : self.api_key}
 
             config.add_section(section)
-            for option, value in values.iteritems():
+            for option, value in values.items():
                 config.set(section, option, value)
 
             if len(self.__data):
                 section = 'settings'
                 config.add_section(section)
-                for option, value in self.__data.iteritems():
+                for option, value in self.__data.items():
                     config.set(section, option, value)
 
             try:
@@ -1791,7 +1791,7 @@ class FIRST(object):
                 config (:obj:`RawConfigParser`): The configuration details to
                     load.
             '''
-            if not isinstance(config, ConfigParser.RawConfigParser):
+            if not isinstance(config, configparser.RawConfigParser):
                 return
 
             self.__data = {}
@@ -1805,7 +1805,7 @@ class FIRST(object):
                             'authentication' : self.set_authentication,
                             'api_key' : self.set_api_key}
 
-                for option, set_function in required.iteritems():
+                for option, set_function in required.items():
                     if config.has_option(section, option):
                         set_function(config.get(section, option))
 
@@ -2171,7 +2171,7 @@ class FIRST(object):
                 return
 
             architecture = FIRST.Info.get_architecture()
-            for i in xrange(0, len(metadata), self.MAX_CHUNK):
+            for i in range(0, len(metadata), self.MAX_CHUNK):
                 params = self._min_info()
                 data = {}
                 for m in metadata[i:i + self.MAX_CHUNK]:
@@ -2401,7 +2401,7 @@ class FIRST(object):
                 self.threads[thread]['complete'] = True
                 return
 
-            for i in xrange(0, len(metadata), self.MAX_CHUNK):
+            for i in range(0, len(metadata), self.MAX_CHUNK):
                 if self.threads[thread]['stop']:
                     break
 
@@ -2421,7 +2421,7 @@ class FIRST(object):
                     continue
 
                 results = {}
-                for metadata_id, details in response['results'].iteritems():
+                for metadata_id, details in response['results'].items():
                     results[metadata_id] = FIRST.MetadataServer(details)
 
                 if 0 < len(results):
@@ -2476,7 +2476,7 @@ class FIRST(object):
 
             subkeys = {'engines', 'matches'}
             architecture = FIRST.Info.get_architecture()
-            for i in xrange(0, len(metadata), self.MAX_CHUNK):
+            for i in range(0, len(metadata), self.MAX_CHUNK):
                 if self.threads[thread]['stop']:
                     break
 
@@ -2503,7 +2503,7 @@ class FIRST(object):
 
                 if (not response or ('results' not in response)
                     or (dict != type(response['results']))
-                    or (not subkeys.issubset(response['results'].keys()))
+                    or (not subkeys.issubset(list(response['results'].keys())))
                     or (0 == len(response['results']['matches']))):
                     continue
 
@@ -2687,7 +2687,7 @@ class FIRST(object):
                 Args:
                     flag (:obj:`bool`): Flag to select or deselect all.
                 '''
-                self.rows_selected = set(xrange(len(self._data))) if flag else set()
+                self.rows_selected = set(range(len(self._data))) if flag else set()
 
             def filter_sub_functions(self, flag):
                 '''Filters out or restores any sub_* functions.
@@ -2852,7 +2852,7 @@ class FIRST(object):
                 if flag:
                     #   Reset list
                     self.ids_selected = set()
-                    for address, matches in self._data.iteritems():
+                    for address, matches in self._data.items():
                         #   If address is hidden then skip it
                         if address in hidden:
                             continue
@@ -3038,7 +3038,7 @@ class FIRST(object):
                 total = len(data)
                 idaapi.show_wait_box(message.format(total, int(i)))
                 try:
-                    for address, metadata in data.iteritems():
+                    for address, metadata in data.items():
                         function = FIRST.Metadata.get_function(address)
 
                         if idaapi.wasBreak():
@@ -3127,7 +3127,7 @@ class FIRST(object):
 
                 results = data['results']
 
-                for address, metadata_id in results.iteritems():
+                for address, metadata_id in results.items():
                     #   Update Wait Box
                     self.uploaded += 1
                     percentage = int((self.uploaded / self.total) * 100)
@@ -3177,14 +3177,14 @@ class FIRST(object):
                 self.total = len(self.functions)
                 self.updated = 0
 
-                server_thread = FIRST.server.get(self.functions.values(),
+                server_thread = FIRST.server.get(list(self.functions.values()),
                                                     self.__data, self.__complete)
 
             def __data(self, thread, data):
                 if (not data) and (dict != type(data)):
                     return
 
-                for metadata_id, metadata in data.iteritems():
+                for metadata_id, metadata in data.items():
                     if metadata_id not in self.functions:
                         continue
 
@@ -3201,7 +3201,7 @@ class FIRST(object):
 
                 #   If functions are still in the queue, this means the metadata
                 #   was deleted on the server remove the id from it
-                for function in self.functions.values():
+                for function in list(self.functions.values()):
                     function.id = None
 
     class Hook():
@@ -3359,7 +3359,7 @@ class FIRST(object):
                     #   Get/Initialize the hash details for the file
                     FIRST.Info.get_file_details()
 
-                    config = ConfigParser.RawConfigParser()
+                    config = configparser.RawConfigParser()
                     if not config.read(FIRST.config_path):
                         FIRST.show_welcome = True
                         config = None
@@ -3794,14 +3794,14 @@ class FIRSTUI(object):
             if full:
                 engine_info = match.engine_info
                 msg = '<p><b>{}</b><br/>{}</p>'
-                tooltip = [msg.format(k,v) for k,v in engine_info.iteritems()]
+                tooltip = [msg.format(k,v) for k,v in engine_info.items()]
                 tooltip = '<hr style="margin:1px"/>'.join(tooltip)
 
                 prototype_tooltip.setToolTip(match.prototype)
                 prototype_tooltip.setTextAlignment(Qt.AlignCenter)
                 similarity = QtGui.QStandardItem(str(round(match.similarity, 2)) + '%')
                 similarity.setTextAlignment(Qt.AlignCenter)
-                engines = QtGui.QStandardItem(', '.join(engine_info.keys()))
+                engines = QtGui.QStandardItem(', '.join(list(engine_info.keys())))
                 engines_tooltip = QtGui.QStandardItem('...')
                 engines_tooltip.setTextAlignment(Qt.AlignCenter)
                 engines_tooltip.setToolTip(tooltip)
@@ -3951,7 +3951,7 @@ class FIRSTUI(object):
             colors = [  FIRST.color_changed, FIRST.color_unchanged,
                         FIRST.color_default, FIRST.color_selected]
             text = ['Changed', 'Unchanged', 'Default', 'Selected']
-            for i in xrange(len(colors)):
+            for i in range(len(colors)):
                 box = QtWidgets.QLabel()
                 box.setFixedHeight(10)
                 box.setFixedWidth(10)
@@ -4074,7 +4074,7 @@ class FIRSTUI(object):
             self.filter_sub_funcs.stateChanged.connect(self.filter_sub_callback)
 
             callback = lambda y, z: lambda x: self.table_clicked(x, y, z)
-            for i in xrange(len(self.table_views)):
+            for i in range(len(self.table_views)):
                 table_view = self.table_views[i]
                 data_model = self.data_models[i]
                 table_view.clicked.connect(callback(table_view, data_model))
@@ -4245,7 +4245,7 @@ class FIRSTUI(object):
             style = 'background-color: #{0:06x}; border: 1px solid #c0c0c0;'
             colors = [FIRST.color_applied, FIRST.color_selected]
             text = ['Applied', 'Selected']
-            for i in xrange(len(colors)):
+            for i in range(len(colors)):
                 box = QtWidgets.QLabel()
                 box.setFixedHeight(10)
                 box.setFixedWidth(10)
@@ -4393,7 +4393,7 @@ class FIRSTUI(object):
 
             # Add db functions to the model
             root_node = model.invisibleRootItem()
-            for address, matches in data.iteritems():
+            for address, matches in data.items():
                 function = FIRST.Metadata.get_function(address)
 
                 func_row = self._make_function_item(function, len(matches))
@@ -4494,7 +4494,7 @@ class FIRSTUI(object):
             hidden = []
             if flag and self.filter_sub_funcs_only.isChecked():
                 root = self.data_model.invisibleRootItem()
-                for i in xrange(root.rowCount()):
+                for i in range(root.rowCount()):
                     child = root.child(i)
                     if child and self.tree_view.isIndexHidden(child.index()):
                         hidden.append(child.data(FIRSTUI.ROLE_ADDRESS))
@@ -4507,7 +4507,7 @@ class FIRSTUI(object):
 
             hidden = []
             root = self.data_model.invisibleRootItem()
-            for i in xrange(root.rowCount()):
+            for i in range(root.rowCount()):
                 child = root.child(i)
                 if not child:
                     continue
@@ -4555,7 +4555,7 @@ class FIRSTUI(object):
             style = 'background-color: #{0:06x}; border: 1px solid #c0c0c0;'
             colors = [FIRST.color_applied, FIRST.color_selected]
             text = ['Applied', 'Selected']
-            for i in xrange(len(colors)):
+            for i in range(len(colors)):
                 box = QtWidgets.QLabel()
                 box.setFixedHeight(10)
                 box.setFixedWidth(10)
@@ -4648,7 +4648,7 @@ class FIRSTUI(object):
             if not matches:
                 return
 
-            address = matches.keys()[0]
+            address = list(matches.keys())[0]
             for match in matches[address]:
                 row = FIRSTUI.SharedObjects.make_match_info(match, check_all=False)
                 root_node.appendRow(row)
